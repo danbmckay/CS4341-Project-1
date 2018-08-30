@@ -58,24 +58,20 @@ public class StateTreeEval extends StateTree
     {
         if(move.column >= columns || move.column < 0)
         {
-            out.println("That column doesn't exist.");
             return false;
         }
         if(!move.pop && boardMatrix[rows-1][move.column] != 0)
         {
-            out.println("That column is full.");
             return false;
         }
         if(move.pop)
         {
             if(boardMatrix[0][move.column] != turn)
             {
-                out.println("You can't pop a piece that isn't your own.");
                 return false;
             }
             if((turn == 1 && pop1) || (turn == 2 && pop2))
             {
-                out.println("You can't pop a piece twice in a game.");
                 return false;
             }
         }

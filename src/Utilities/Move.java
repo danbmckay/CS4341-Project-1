@@ -15,8 +15,7 @@ public class Move
     boolean pop;
     int column;
 
-    public Move(boolean p, int c)
-    {
+    public Move(boolean p, int c){
         pop = p;
         column = c;
     }
