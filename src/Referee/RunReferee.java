@@ -8,6 +8,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import Players.MGDMPlayer;
 import Players.Player;
 import Players.SimplePlayer1;
 import Players.SimplePlayer2;
@@ -27,7 +28,7 @@ public class RunReferee {
 
 
         Player player1 = (Player) new SimplePlayer1("SimplePlayer1", 1, timeLimit);
-        Player player2 = (Player) new SimplePlayer2("SimplePlayer2", 2, timeLimit);
+        Player player2 = (Player) new MGDMPlayer("OurPlayer", 2, timeLimit);
 
         Referee referee = new Referee();
         referee.setOut(System.out);
