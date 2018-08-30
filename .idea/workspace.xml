@@ -2,20 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="74ca0364-b04d-4297-9450-a9d37afc5512" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/Players/MGDMPlayer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ConnectNth/Players/SimplePlayer1.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ConnectNth/Players/SimplePlayer1.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ConnectNth/Referee/Referee.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ConnectNth/Referee/Referee.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ConnectNth/Referee/RunReferee$1.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ConnectNth/Referee/RunReferee$1.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ConnectNth/Referee/RunReferee.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ConnectNth/Referee/RunReferee.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ConnectNth/Utilities/Move.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ConnectNth/Utilities/Move.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ConnectNth/Utilities/StateTree.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ConnectNth/Utilities/StateTree.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Players/SimplePlayer1.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Players/SimplePlayer1.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Players/SmartPlayer.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Referee/RunReferee.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Referee/RunReferee.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Utilities/Move.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Utilities/Move.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Utilities/StateTreeEval.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Utilities/StateTreeEval.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Players/MGDMPlayer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Players/MGDMPlayer.java" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -110,12 +98,14 @@
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
-          <entry key="java" value="6436" />
+          <entry key="java" value="6777" />
+          <entry key="txt" value="59" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
-          <entry key="JAVA" value="6436" />
+          <entry key="JAVA" value="6777" />
+          <entry key="PLAIN_TEXT" value="59" />
         </counts>
       </usages-collector>
     </session>
@@ -128,7 +118,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/Referee/Referee.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="179">
+            <state relative-caret-position="1250">
               <caret line="79" selection-start-line="79" selection-end-line="79" />
               <folding>
                 <element signature="imports" expanded="true" />
@@ -143,8 +133,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/Players/MGDMPlayer.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="476">
-              <caret line="28" column="49" lean-forward="true" selection-start-line="28" selection-start-column="49" selection-end-line="28" selection-end-column="49" />
+            <state relative-caret-position="289">
+              <caret line="83" column="59" selection-start-line="83" selection-start-column="59" selection-end-line="83" selection-end-column="59" />
               <folding>
                 <element signature="imports" expanded="true" />
                 <element signature="e#1549#1550#0" expanded="true" />
@@ -333,7 +323,7 @@
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="aspect.path.notification.shown" value="true" />
-    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1535600491769" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1535601475842" />
     <property name="extract.method.default.visibility" value="private" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="project.structure.last.edited" value="Project" />
@@ -403,12 +393,20 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1535472070148</updated>
-      <workItem from="1535490187751" duration="22383000" />
+      <workItem from="1535490187751" duration="23536000" />
     </task>
+    <task id="LOCAL-00001" summary="MGDMPLayer minimax with iterative deepening working">
+      <created>1535600803036</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1535600803037</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="22383000" />
+    <option name="totallyTimeSpent" value="23536000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
@@ -451,6 +449,10 @@
   <component name="VcsContentAnnotationSettings">
     <option name="myLimit" value="2678400000" />
   </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="MGDMPLayer minimax with iterative deepening working" />
+    <option name="LAST_COMMIT_MESSAGE" value="MGDMPLayer minimax with iterative deepening working" />
+  </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
@@ -462,7 +464,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/Players/MGDMPlayer.java</url>
-          <line>125</line>
+          <line>130</line>
           <properties />
           <option name="timeStamp" value="20" />
         </line-breakpoint>
@@ -554,7 +556,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/Referee/Referee.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="179">
+        <state relative-caret-position="1250">
           <caret line="79" selection-start-line="79" selection-end-line="79" />
           <folding>
             <element signature="imports" expanded="true" />
@@ -567,8 +569,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/Players/MGDMPlayer.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="476">
-          <caret line="28" column="49" lean-forward="true" selection-start-line="28" selection-start-column="49" selection-end-line="28" selection-end-column="49" />
+        <state relative-caret-position="289">
+          <caret line="83" column="59" selection-start-line="83" selection-start-column="59" selection-end-line="83" selection-end-column="59" />
           <folding>
             <element signature="imports" expanded="true" />
             <element signature="e#1549#1550#0" expanded="true" />

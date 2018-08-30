@@ -16,7 +16,7 @@ public class MGDMPlayer extends Player {
     private final ExecutorService myService = Executors.newSingleThreadExecutor();
     private StateTree initState; //the state of the board when its the players turn
     private int maxDepth = 1; //the number of layers that the algorithm is going to dive
-    private int currentDepth = 1; //how deep is minimax going
+    private int currentDepth = 1; //how deep is minimax going for a loop of iterative deepening
     private boolean myPop = false; // does the player still have a pop
     private boolean theirPop = false; // has the opponent used there pop yet
     private StateTree lastBoard; //what did the last board look like to see if the popped
@@ -57,6 +57,7 @@ public class MGDMPlayer extends Player {
         long bufferTime = (long)1;
         long myTimeLimit = timeLimit - bufferTime;
         //actions to take on the first turn, initiate the last board to not get null
+        //and determines what turn we are as a player
         if(firstTurn){
             lastBoard = localInitState;
             if(getTurn(localInitState)){
@@ -68,15 +69,19 @@ public class MGDMPlayer extends Player {
                 tTurn = 1;
             }
         }
+        //determines if pops have been used and resets the current depth of iterative deepening search
         else {
             popUsed(localInitState);
             currentDepth = 1;
         }
+        //creates future thread
         Future<Object> future = null;
 
+        //gets the initial moves and scores for each turn of play
         gKids = getPossibleBoards(initState, true);
         gScores = new ArrayList<>();
 
+        //launch the thread that will timeout appropriately
         try {
             future = myService.submit(getNextDepth);
             finalMove = (Move) future.get(myTimeLimit, TimeUnit.SECONDS);
