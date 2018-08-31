@@ -1,8 +1,8 @@
 package Players;
 
+import Utilities.MGDMStateTree;
 import Utilities.Move;
 import Utilities.StateTree;
-import Utilities.StateTreeEval;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -101,7 +101,7 @@ public class MGDMPlayer extends Player {
         while(true) {
             Move finalMove;
             for (int i = 0; i < gKids.size(); i++) {
-                StateTreeEval tempTree = new StateTreeEval(initState.rows, initState.columns, initState.winNumber, 1, myPop, theirPop, initState);
+                MGDMStateTree tempTree = new MGDMStateTree(initState.rows, initState.columns, initState.winNumber, 1, myPop, theirPop, initState,1);
                 tempTree.makeMove(gKids.get(i));
                 if (maxDepth > 1) {
                     gScores.add(miniMax(tempTree,currentDepth));
@@ -125,7 +125,7 @@ public class MGDMPlayer extends Player {
             if(depth==currentDepth){
                 List<Double> scores = new ArrayList<>();
                 for(int i = 0 ; i < kids.size(); i++) {
-                    StateTreeEval tempTree = new StateTreeEval(currentState.rows, currentState.columns, currentState.winNumber, mTurn, myPop, theirPop, currentState);
+                    MGDMStateTree tempTree = new MGDMStateTree(currentState.rows, currentState.columns, currentState.winNumber, mTurn, myPop, theirPop, currentState,1);
                     tempTree.makeMove(kids.get(i));
                     scores.add(tempTree.evaluate());
                 }
@@ -135,7 +135,7 @@ public class MGDMPlayer extends Player {
             else{
                 List<Double> scores = new ArrayList<>();
                 for(int i = 0 ; i < kids.size(); i++) {
-                    StateTreeEval tempTree = new StateTreeEval(currentState.rows, currentState.columns, currentState.winNumber, mTurn, myPop, theirPop, currentState);
+                    MGDMStateTree tempTree = new MGDMStateTree(currentState.rows, currentState.columns, currentState.winNumber, mTurn, myPop, theirPop, currentState,1);
                     tempTree.makeMove(kids.get(i));
                     scores.add(miniMax(tempTree, depth+1));
                 }
@@ -150,7 +150,7 @@ public class MGDMPlayer extends Player {
             if(depth==currentDepth){
                 List<Double> scores = new ArrayList<>();
                 for(int i = 0 ; i < kids.size(); i++) {
-                    StateTreeEval tempTree = new StateTreeEval(currentState.rows, currentState.columns, currentState.winNumber, tTurn, myPop, theirPop, currentState);
+                    MGDMStateTree tempTree = new MGDMStateTree(currentState.rows, currentState.columns, currentState.winNumber, tTurn, myPop, theirPop, currentState,1);
                     tempTree.makeMove(kids.get(i));
                     scores.add(tempTree.evaluate());
                 }
@@ -160,7 +160,7 @@ public class MGDMPlayer extends Player {
             else{
                 List<Double> scores = new ArrayList<>();
                 for(int i = 0 ; i < kids.size(); i++) {
-                    StateTreeEval tempTree = new StateTreeEval(currentState.rows, currentState.columns, currentState.winNumber, tTurn, myPop, theirPop, currentState);
+                    MGDMStateTree tempTree = new MGDMStateTree(currentState.rows, currentState.columns, currentState.winNumber, tTurn, myPop, theirPop, currentState,1);
                     tempTree.makeMove(kids.get(i));
                     scores.add(miniMax(tempTree,depth+1));
                 }
