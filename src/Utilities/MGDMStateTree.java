@@ -77,12 +77,12 @@ public class MGDMStateTree extends StateTree
                         return 1.0;
                     }
                 }
-                else if(this.getBoardMatrix()[i][j] != 0){
+                else if(this.getBoardMatrix()[i][j] != playerNum && this.getBoardMatrix()[i][j] != 0){
                     //Opposing player
                     for(int temp:tempInARow){
                         oppInARow[temp-1]++;
                     }
-                    if(playerInARow[winNumber-1] >= 1){
+                    if(oppInARow[winNumber-1] >= 1){
                         //We Lose!
                         return -1.0;
                     }
@@ -107,14 +107,14 @@ public class MGDMStateTree extends StateTree
      * @param x Difference between our heuristic value and opponent's heuristic value
      * @return Normalized value between -1 and 1
      */
-    private double sigmoid(double x){
+    public double sigmoid(double x){
         //(1-e^2x)/(1+e^2x)
-        return (1.0 - Math.pow(Math.E, -2.0)) / (1.0 + Math.pow(Math.E, -2.0));
+        return (1.0 - Math.pow(Math.E, (-2.0 * x))) / (1.0 + Math.pow(Math.E, (-2.0 * x)));
     }
 
     /**
      * counts how many pieces in a row there are at the current space. It starts at the space given, and
-     * will check how many are in a row to the right, diagonal down right, down, and diagonal down left.
+     * will check how many are in a row to the right, diagonal up and right, up, and diagonal up and left.
       * @param rowNum row number to start check at
      * @param colNum column number to start check at
      * @return An integer array of how many in a row are from this position from each direction checked
@@ -143,7 +143,7 @@ public class MGDMStateTree extends StateTree
                     }
                 }
                 else if(i == 1){
-                    //right and down
+                    //right and up
                     if((colNum + count < this.columns) && (rowNum + count < this.rows) && (this.getBoardMatrix()[rowNum + count][colNum + count] == currentPlayer)){
                         numInARow[i]++;
                         count++;
@@ -153,7 +153,7 @@ public class MGDMStateTree extends StateTree
                     }
                 }
                 else if(i == 2){
-                    //down
+                    //up
                     if((rowNum + count < this.rows) && (this.getBoardMatrix()[rowNum + count][colNum] == currentPlayer)){
                         numInARow[i]++;
                         count++;
@@ -163,7 +163,7 @@ public class MGDMStateTree extends StateTree
                     }
                 }
                 else{
-                    //down and to left
+                    //up and to left
                     if((colNum - count >= 0) && (rowNum + count < this.rows) && (this.getBoardMatrix()[rowNum + count][colNum - count] == currentPlayer)){
                         numInARow[i]++;
                         count++;
