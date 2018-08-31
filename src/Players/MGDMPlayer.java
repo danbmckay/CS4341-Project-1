@@ -1,8 +1,9 @@
 package Players;
 
+import Utilities.MGDMStateTree;
 import Utilities.Move;
 import Utilities.StateTree;
-import Utilities.StateTreeEval;
+
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,8 +18,8 @@ public class MGDMPlayer extends Player {
     private StateTree initState; //the state of the board when its the players turn
     private int maxDepth = 1; //the number of layers that the algorithm is going to dive
     private int currentDepth = 1; //how deep is minimax going for a loop of iterative deepening
-    private boolean myPop = false; // does the player still have a pop
-    private boolean theirPop = false; // has the opponent used there pop yet
+    private boolean myPop = true; // does the player still have a pop
+    private boolean theirPop = true; // has the opponent used there pop yet
     private StateTree lastBoard; //what did the last board look like to see if the popped
     private List<Move> gKids; //list of immediate moves the player can make
     private List<Double> gScores; //final list of scores to choose from to make a move
@@ -106,9 +107,9 @@ public class MGDMPlayer extends Player {
         while(true) {
             Move finalMove;
             for (int i = 0; i < gKids.size(); i++) {
-                StateTreeEval tempTree = new StateTreeEval(initState.rows, initState.columns, initState.winNumber, 1, myPop, theirPop, initState);
-                tempTree.makeMove(gKids.get(i));
-                if (maxDepth > 1) {
+                MGDMStateTree tempTree = new MGDMStateTree(initState.rows, initState.columns, initState.winNumber, mTurn, myPop, theirPop, initState, mTurn);
+                tempTree.testMove(gKids.get(i));
+                if (currentDepth > 1) {
                     gScores.add(miniMax(tempTree,currentDepth));
                 } else {
                     gScores.add(tempTree.evaluate());
@@ -130,8 +131,8 @@ public class MGDMPlayer extends Player {
             if(depth==currentDepth){
                 List<Double> scores = new ArrayList<>();
                 for(int i = 0 ; i < kids.size(); i++) {
-                    StateTreeEval tempTree = new StateTreeEval(currentState.rows, currentState.columns, currentState.winNumber, mTurn, myPop, theirPop, currentState);
-                    tempTree.makeMove(kids.get(i));
+                    MGDMStateTree tempTree = new MGDMStateTree(currentState.rows, currentState.columns, currentState.winNumber, mTurn, myPop, theirPop, currentState, mTurn);
+                    tempTree.testMove(kids.get(i));
                     scores.add(tempTree.evaluate());
                 }
                 return Collections.max(scores);
@@ -140,8 +141,8 @@ public class MGDMPlayer extends Player {
             else{
                 List<Double> scores = new ArrayList<>();
                 for(int i = 0 ; i < kids.size(); i++) {
-                    StateTreeEval tempTree = new StateTreeEval(currentState.rows, currentState.columns, currentState.winNumber, mTurn, myPop, theirPop, currentState);
-                    tempTree.makeMove(kids.get(i));
+                    MGDMStateTree tempTree = new MGDMStateTree(currentState.rows, currentState.columns, currentState.winNumber, mTurn, myPop, theirPop, currentState, mTurn);
+                    tempTree.testMove(kids.get(i));
                     scores.add(miniMax(tempTree, depth+1));
                 }
                 return Collections.max(scores);
@@ -155,8 +156,8 @@ public class MGDMPlayer extends Player {
             if(depth==currentDepth){
                 List<Double> scores = new ArrayList<>();
                 for(int i = 0 ; i < kids.size(); i++) {
-                    StateTreeEval tempTree = new StateTreeEval(currentState.rows, currentState.columns, currentState.winNumber, tTurn, myPop, theirPop, currentState);
-                    tempTree.makeMove(kids.get(i));
+                    MGDMStateTree tempTree = new MGDMStateTree(currentState.rows, currentState.columns, currentState.winNumber, tTurn, myPop, theirPop, currentState, tTurn);
+                    tempTree.testMove(kids.get(i));
                     scores.add(tempTree.evaluate());
                 }
                 return Collections.min(scores);
@@ -165,8 +166,8 @@ public class MGDMPlayer extends Player {
             else{
                 List<Double> scores = new ArrayList<>();
                 for(int i = 0 ; i < kids.size(); i++) {
-                    StateTreeEval tempTree = new StateTreeEval(currentState.rows, currentState.columns, currentState.winNumber, tTurn, myPop, theirPop, currentState);
-                    tempTree.makeMove(kids.get(i));
+                    MGDMStateTree tempTree = new MGDMStateTree(currentState.rows, currentState.columns, currentState.winNumber, tTurn, myPop, theirPop, currentState, tTurn);
+                    tempTree.testMove(kids.get(i));
                     scores.add(miniMax(tempTree,depth+1));
                 }
                 return Collections.min(scores);
@@ -185,13 +186,13 @@ public class MGDMPlayer extends Player {
                 for (int i = 0; i < parentState.columns*2; i++) {
                     if(i < parentState.columns) {
                         Move tempMove = new Move(false, i);
-                        if(parentState.validMove(tempMove)) {
+                        if(isValidMove(parentState, tempMove)) {
                             kids.add(tempMove);
                         }
                     }
                     else{
                         Move tempMove = new Move(true,i-7);
-                        if(parentState.validMove(tempMove)) {
+                        if(isValidMove(parentState, tempMove)) {
                             kids.add(tempMove);
                         }
                     }
@@ -201,7 +202,7 @@ public class MGDMPlayer extends Player {
             else{
                 for (int i = 0; i < parentState.columns; i++) {
                     Move tempMove = new Move(false, i);
-                    if(parentState.validMove(tempMove)) {
+                    if(isValidMove(parentState, tempMove)) {
                         kids.add(tempMove);
                     }
                 }
@@ -215,13 +216,13 @@ public class MGDMPlayer extends Player {
                 for (int i = 0; i < parentState.columns*2; i++) {
                     if(i < parentState.columns) {
                         Move tempMove = new Move(false, i);
-                        if(parentState.validMove(tempMove)) {
+                        if(isValidMove(parentState, tempMove)) {
                             kids.add(tempMove);
                         }
                     }
                     else{
                         Move tempMove = new Move(true,i-7);
-                        if(parentState.validMove(tempMove)) {
+                        if(isValidMove(parentState, tempMove)) {
                             kids.add(tempMove);
                         }
                     }
@@ -231,7 +232,7 @@ public class MGDMPlayer extends Player {
             else{
                 for (int i = 0; i < parentState.columns; i++) {
                     Move tempMove = new Move(false, i);
-                    if(parentState.validMove(tempMove)) {
+                    if(isValidMove(parentState, tempMove)) {
                         kids.add(tempMove);
                     }
                 }
@@ -272,7 +273,56 @@ public class MGDMPlayer extends Player {
         return true;
     }
 
+    public boolean isValidMove(StateTree aState, Move cMove){
+        if(cMove.getColumn() >= aState.columns || cMove.getColumn() < 0){
+            return false;
+        }
+        if(!cMove.getPop() && aState.getBoardMatrix()[aState.rows-1][cMove.getColumn()] != 0){
+            return false;
+        }
+        if(cMove.getPop())
+        {
+            if(aState.getBoardMatrix()[0][cMove.getColumn()] != turn)
+            {
+                return false;
+            }
+            if((turn == mTurn && myPop) || (turn == tTurn && theirPop))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+    /*
+    public boolean validMove(MGDMStateTree aState, Move move)
+    {
+        if(move.column >= columns || move.column < 0)
+        {
+            out.println("That column doesn't exist.");
+            return false;
+        }
+        if(!move.pop && aState.boardMatrix[rows-1][move.column] != 0)
+        {
+            out.println("That column is full.");
+            return false;
+        }
+        if(move.pop)
+        {
+            if(boardMatrix[0][move.column] != turn)
+            {
+                out.println("You can't pop a piece that isn't your own.");
+                return false;
+            }
+            if((turn == 1 && pop1) || (turn == 2 && pop2))
+            {
+                out.println("You can't pop a piece twice in a game.");
+                return false;
+            }
+        }
+        return true;
+    }
 
+*/
 
 
 

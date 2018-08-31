@@ -37,6 +37,11 @@ public class MGDMStateTree extends StateTree
         columns = c;
         winNumber = w;
         boardMatrix = new int[rows][columns];
+        for(int i = 0; i < rows; i++){
+            for(int j = 0; j <columns; j++){
+                boardMatrix[i][j] = p.getBoardMatrix()[i][j];
+            }
+        }
         turn = t;
         pop1 = p1;
         pop2 = p2;
@@ -176,5 +181,35 @@ public class MGDMStateTree extends StateTree
         }
 
         return numInARow;
+    }
+
+    public void testMove(Move move)
+    {
+        if(move.pop)
+        {
+            if(turn == 1)
+                pop1 = true;
+            if(turn == 2)
+                pop2 = true;
+            for(int i=0; i<rows-1; i++)
+            {
+                this.boardMatrix[i][move.column] = boardMatrix[i+1][move.column];
+            }
+            this.boardMatrix[rows-1][move.column] = 0;
+            turn = Math.abs(turn-3);
+            return;
+        }
+        else
+        {
+            for(int i=0; i<rows; i++)
+            {
+                if(this.boardMatrix[i][move.column] == 0)
+                {
+                    this.boardMatrix[i][move.column] = turn;
+                    turn = Math.abs(turn-3);
+                    return;
+                }
+            }
+        }
     }
 }
