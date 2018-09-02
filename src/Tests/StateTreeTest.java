@@ -78,4 +78,21 @@ public class StateTreeTest {
         }
         System.out.println(tree1.evaluate());
     }
+
+    @Test
+    public void testAutoWin(){
+        tree1.makeMove(m0);
+        tree1.makeMove(m0);
+        tree1.makeMove(m1);
+        tree1.makeMove(m1);
+        tree1.makeMove(m2);
+        tree1.makeMove(m2);
+        tree1.makeMove(m4);
+        tree1.makeMove(m3);
+        tree1.makeMove(m4);
+
+
+        assertEquals(tree1.evaluate(),-1.0,0.0);
+
+    }
 }

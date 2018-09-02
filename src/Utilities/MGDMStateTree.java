@@ -1,18 +1,9 @@
 package Utilities;
 /**
- * This class represents the state of a game at any time.
- * This class contains information on the board size and configuration
- * as well as whose turn it is. This class also has the ability
- * to be given a parent and children to the current state. This will help with building the tree
- * that you will min-max on. You don't have to use any of the variables given
- * if you don't want to.
+ * This class extends StateTree, and is used to evaluate the given state
+ * of the board.
  *
- * You might want to make a whole different representation for states which
- * ok, this is just something to get you started but make sure your player
- * can still interpret the RefereeBoard objects its getting and is still
- * able to return moves.
- *
- * @author Ethan Prihar
+ * @author Daniel McKay, Manuel Gonsalves
  */
 
 import java.io.PrintStream;
@@ -72,14 +63,27 @@ public class MGDMStateTree extends StateTree
         Arrays.fill(oppInARow,0);
 
         int[] tempInARow;
+        int tempCount = 0;
 
         for(int i = 0; i < rows; i++){
             for(int j = 0; j < columns; j++){
                 tempInARow = inARow(i, j);
+                tempCount = 0;
                 if(this.getBoardMatrix()[i][j] == playerNum){
                     //Our player
                     for(int temp:tempInARow){
                         playerInARow[temp-1]++;
+                        if(temp == winNumber-1 && super.turn == playerNum){
+                            //1 away from N in a row, use tempCount to know which direction it is
+                            //0 = right, 1= right up, 2= up, 3= up left
+                            //checking for automatic win because it is our turn
+                            if(checkEasyAutoWin(i, j, tempCount)){
+                                //auto win
+                                return 1.0;
+                            }
+                        }
+                        //TODO check same stuff as above but if its not our turn. check for auto win that way, aka 0 1 1 1 0
+                        tempCount++;
                     }
                     if(playerInARow[winNumber-1] >= 1){
                         //We Win!
@@ -90,6 +94,15 @@ public class MGDMStateTree extends StateTree
                     //Opposing player
                     for(int temp:tempInARow){
                         oppInARow[temp-1]++;
+                        if(temp == winNumber-1 && super.turn != playerNum){
+                            //1 away from N in a row, use tempCount to know which direction it is
+                            //0 = right, 1= right up, 2= up, 3= up left
+                            //checking for automatic lose because it is their turn
+                            if(checkEasyAutoWin(i, j, tempCount)){
+                                //auto lose
+                                return -1.0;
+                            }
+                        }
                     }
                     if(oppInARow[winNumber-1] >= 1){
                         //We Lose!
@@ -109,6 +122,68 @@ public class MGDMStateTree extends StateTree
         }
         double heuristic = playerSigmoid - oppSigmoid;
         return sigmoid(heuristic);
+    }
+
+    /**
+     * Checks at location i, j if there is 1 space open for an automatic win, e.g. 1 1 1 0
+     * This assumes that starting from space [i,j], there is N-1 in a row
+     * @param i row of starting piece
+     * @param j column of starting piece
+     * @param tempCount direction to check in
+     * @return whether or not there is an automatic win
+     */
+    public boolean checkEasyAutoWin(int i, int j, int tempCount){
+        if(tempCount==0){
+            if((j+winNumber-1 < columns) && this.getBoardMatrix()[i][j+winNumber-1] == 0){
+                if((i>0 && this.getBoardMatrix()[i-1][j+winNumber-1] != 0) || (i == 0)){
+                    //auto win
+                    return true;
+                }
+            }
+            else if((j-1 >= 0) && this.getBoardMatrix()[i][j-1] == 0){
+                if((i>0 && this.getBoardMatrix()[i-1][j-1] != 0) || (i == 0)){
+                    //auto win
+                    return true;
+                }
+            }
+        }
+        else if (tempCount==1){
+            if((j+winNumber-1 < columns && i+winNumber-1 < rows) && this.getBoardMatrix()[i+winNumber-1][j+winNumber-1] == 0){
+                if((this.getBoardMatrix()[i+winNumber-2][j+winNumber-1] != 0)){
+                    //auto win
+                    return true;
+                }
+            }
+            else if((j-1 >= 0 && i-1 >= 0) && this.getBoardMatrix()[i-1][j-1] == 0){
+                if((i-2 >=0 && this.getBoardMatrix()[i-2][j-1] != 0) || (i-1 == 0)){
+                    //auto win
+                    return true;
+                }
+            }
+        }
+        else if (tempCount==2){
+            if((i+winNumber-1 < rows) && this.getBoardMatrix()[i+winNumber-1][j] == 0){
+                if((i>0 && this.getBoardMatrix()[i-1][j+winNumber-1] != 0)){
+                    //auto win
+                    return true;
+                }
+            }
+        }
+        else if (tempCount==3){
+            if((j-winNumber+1 >= 0 && i+winNumber-1 < rows) && this.getBoardMatrix()[i+winNumber-1][j-winNumber+1] == 0){
+                if((this.getBoardMatrix()[i+winNumber-2][j-winNumber+1] != 0)){
+                    //auto win
+                    return true;
+                }
+            }
+            else if((j+1 < columns && i-1 >= 0) && this.getBoardMatrix()[i-1][j+1] == 0){
+                if((i-2 >= 0 && this.getBoardMatrix()[i-2][j+1] != 0) || (i==0)){
+                    //auto win
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -213,9 +288,9 @@ public class MGDMStateTree extends StateTree
     {
         if(move.pop)
         {
-            if(turn == 1)
+            if(super.turn == 1)
                 pop1 = true;
-            if(turn == 2)
+            if(super.turn == 2)
                 pop2 = true;
             for(int i=0; i<rows-1; i++)
             {
