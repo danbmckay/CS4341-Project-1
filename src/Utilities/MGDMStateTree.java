@@ -28,6 +28,7 @@ public class MGDMStateTree extends StateTree
     StateTree parent; // parent state
     ArrayList<MGDMStateTree> children; // list of children states
     private PrintStream out = null;
+    ArrayList<Coordinates> visited;
 
 
     public MGDMStateTree(int r, int c, int w, int t, boolean p1, boolean p2, StateTree p, int playerNum)
@@ -37,20 +38,23 @@ public class MGDMStateTree extends StateTree
         columns = c;
         winNumber = w;
         boardMatrix = new int[rows][columns];
-        for(int i = 0; i < rows; i++){
-            for(int j = 0; j <columns; j++){
-                boardMatrix[i][j] = p.getBoardMatrix()[i][j];
-            }
-        }
         turn = t;
         pop1 = p1;
         pop2 = p2;
         this.playerNum = playerNum;
-        if(p != null)
+        if(p != null) {
             parent = p;
+            for(int i = 0; i < rows; i++){
+                for(int j = 0; j <columns; j++){
+                    boardMatrix[i][j] = p.getBoardMatrix()[i][j];
+                }
+            }
+        }
         if (out == null) {
             out = out;
         }
+
+        visited = new ArrayList<>();
     }
 
     /**
@@ -100,8 +104,8 @@ public class MGDMStateTree extends StateTree
         double oppSigmoid = 0;
         //ignore 1 in a row for heuristic check
         for(int i = 1; i < winNumber; i++){
-            playerSigmoid = Math.pow((double)playerInARow[i], (double)i+1);
-            oppSigmoid = Math.pow((double)oppInARow[i], (double)i+1);
+            playerSigmoid += Math.pow((double)playerInARow[i], (double)i);
+            oppSigmoid += Math.pow((double)oppInARow[i], (double)i);
         }
         double heuristic = playerSigmoid - oppSigmoid;
         return sigmoid(heuristic);
@@ -139,8 +143,9 @@ public class MGDMStateTree extends StateTree
             while(keepSearching){
                 if(i == 0){
                     //right
-                    if((colNum + count < this.columns) && (this.getBoardMatrix()[rowNum][colNum + count] == currentPlayer)){
+                    if((colNum + count < this.columns) && (!hasBeenVisited(rowNum,colNum+count,i)) && (this.getBoardMatrix()[rowNum][colNum + count] == currentPlayer)){
                         numInARow[i]++;
+                        visited.add(new Coordinates(rowNum,colNum+count,i));
                         count++;
                     }
                     else{
@@ -149,8 +154,9 @@ public class MGDMStateTree extends StateTree
                 }
                 else if(i == 1){
                     //right and up
-                    if((colNum + count < this.columns) && (rowNum + count < this.rows) && (this.getBoardMatrix()[rowNum + count][colNum + count] == currentPlayer)){
+                    if((colNum + count < this.columns) && (rowNum + count < this.rows) && (!hasBeenVisited(rowNum+count,colNum+count,i)) && (this.getBoardMatrix()[rowNum + count][colNum + count] == currentPlayer)){
                         numInARow[i]++;
+                        visited.add(new Coordinates(rowNum+count,colNum+count,i));
                         count++;
                     }
                     else{
@@ -159,8 +165,9 @@ public class MGDMStateTree extends StateTree
                 }
                 else if(i == 2){
                     //up
-                    if((rowNum + count < this.rows) && (this.getBoardMatrix()[rowNum + count][colNum] == currentPlayer)){
+                    if((rowNum + count < this.rows) && (!hasBeenVisited(rowNum+count,colNum,i)) && (this.getBoardMatrix()[rowNum + count][colNum] == currentPlayer)){
                         numInARow[i]++;
+                        visited.add(new Coordinates(rowNum+count,colNum,i));
                         count++;
                     }
                     else{
@@ -169,8 +176,9 @@ public class MGDMStateTree extends StateTree
                 }
                 else{
                     //up and to left
-                    if((colNum - count >= 0) && (rowNum + count < this.rows) && (this.getBoardMatrix()[rowNum + count][colNum - count] == currentPlayer)){
+                    if((colNum - count >= 0) && (rowNum + count < this.rows) && (!hasBeenVisited(rowNum+count,colNum-count,i)) && (this.getBoardMatrix()[rowNum + count][colNum - count] == currentPlayer)){
                         numInARow[i]++;
+                        visited.add(new Coordinates(rowNum+count,colNum-count,i));
                         count++;
                     }
                     else{
@@ -181,6 +189,24 @@ public class MGDMStateTree extends StateTree
         }
 
         return numInARow;
+    }
+
+    /**
+     * When checking for how many in a row each player has, there is the possibility of double counting, such as if it is 3 in a row,
+     * it will double count it as 1 3 in a row and 1 2 in a row. This function returns whether or not this piece has been checked yet
+     * in the current direction to eliminate this duplication.
+     * @param rowNum Row number of piece to be checked
+     * @param colNum Column number of piece to be checked
+     * @param dir Direction that piece is being checked in
+     * @return Whether or not piece has been visited yet
+     */
+    public boolean hasBeenVisited(int rowNum, int colNum, int dir){
+        for(Coordinates c:visited){
+            if(c.row == rowNum && c.column == colNum && c.direction == dir){
+                return true;
+            }
+        }
+        return false;
     }
 
     public void testMove(Move move)
@@ -211,5 +237,17 @@ public class MGDMStateTree extends StateTree
                 }
             }
         }
+    }
+}
+
+/**
+ * Coordinate class used to store coordinates visited so far on the board
+ */
+class Coordinates{
+    public int row, column, direction;
+    public Coordinates(int r, int c, int d){
+        row = r;
+        column = c;
+        direction = d;
     }
 }

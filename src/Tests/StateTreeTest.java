@@ -50,7 +50,7 @@ public class StateTreeTest {
             tree1.makeMove(move1);
             tree1.makeMove(move2);
         }
-        tree1.makeMove(move1);
+//        tree1.makeMove(move1);
 
         assertEquals(tree1.evaluate(),1.0,0);
     }
@@ -72,11 +72,10 @@ public class StateTreeTest {
     @Test
     public void testHeuristics(){
         Random rand = new Random();
-        for(int i = 0;i<20;i++){
+        for(int i = 0;i<5;i++){
             int r = rand.nextInt(6);
             tree1.makeMove(new Move(false, r));
         }
-        tree1.evaluate();
-
+        System.out.println(tree1.evaluate());
     }
 }
