@@ -14,7 +14,7 @@ public class MGDMStateTree extends StateTree
 {
     public int rows, columns, winNumber, turn; // board parameters
     public int playerNum; // what number player we control
-    boolean pop1, pop2; // true if the player has used their pop move
+    public boolean pop1, pop2; // true if the player has used their pop move
     int[][] boardMatrix; // matrix representing the board (0 = empty, 1 = player1, 2 = player2)
     StateTree parent; // parent state
     ArrayList<MGDMStateTree> children; // list of children states
@@ -74,23 +74,26 @@ public class MGDMStateTree extends StateTree
                 if(this.getBoardMatrix()[i][j] == playerNum){
                     //Our player
                     for(int temp:tempInARow){
+                        if(temp == winNumber){
+                            return MAX_VALUE;
+                        }
                         playerInARow[temp-1]++;
-                        if(temp == winNumber-1 && turn == playerNum){
-                            //1 away from N in a row, use tempCount to know which direction it is
-                            //0 = right, 1= right up, 2= up, 3= up left
-                            //checking for automatic win because it is our turn
-                            if(checkEasyAutoWin(i, j, tempCount)){
-                                //auto win
-                                return MAX_VALUE;
-                            }
-                        }
-                        else if(temp == winNumber-1 && turn!=playerNum){
-                            if(checkDoubleAutoWin(i, j, tempCount)){
-                                //auto win
-                                return MAX_VALUE;
-                            }
-                        }
-                        tempCount++;
+//                        if(temp == winNumber-1 && turn == playerNum){
+//                            //1 away from N in a row, use tempCount to know which direction it is
+//                            //0 = right, 1= right up, 2= up, 3= up left
+//                            //checking for automatic win because it is our turn
+//                            if(checkEasyAutoWin(i, j, tempCount)){
+//                                //auto win
+//                                return MAX_VALUE;
+//                            }
+//                        }
+//                        else if(temp == winNumber-1 && turn!=playerNum){
+//                            if(checkDoubleAutoWin(i, j, tempCount)){
+//                                //auto win
+//                                return MAX_VALUE;
+//                            }
+//                        }
+//                        tempCount++;
                     }
                     if(playerInARow[winNumber-1] >= 1){
                         //We Win!
@@ -100,23 +103,26 @@ public class MGDMStateTree extends StateTree
                 else if(this.getBoardMatrix()[i][j] != playerNum && this.getBoardMatrix()[i][j] != 0){
                     //Opposing player
                     for(int temp:tempInARow){
+                        if(temp == winNumber){
+                            return MIN_VALUE;
+                        }
                         oppInARow[temp-1]++;
-                        if(temp == winNumber-1 && turn != playerNum){
-                            //1 away from N in a row, use tempCount to know which direction it is
-                            //0 = right, 1= right up, 2= up, 3= up left
-                            //checking for automatic lose because it is their turn
-                            if(checkEasyAutoWin(i, j, tempCount)){
-                                //auto lose
-                                return MIN_VALUE;
-                            }
-                        }
-                        else if(temp == winNumber-1 && turn == playerNum){
-                            if(checkDoubleAutoWin(i, j, tempCount)){
-                                //auto lose
-                                return MIN_VALUE;
-                            }
-                        }
-                        tempCount++;
+//                        if(temp == winNumber-1 && turn != playerNum){
+//                            //1 away from N in a row, use tempCount to know which direction it is
+//                            //0 = right, 1= right up, 2= up, 3= up left
+//                            //checking for automatic lose because it is their turn
+//                            if(checkEasyAutoWin(i, j, tempCount)){
+//                                //auto lose
+//                                return MIN_VALUE;
+//                            }
+//                        }
+//                        else if(temp == winNumber-1 && turn == playerNum){
+//                            if(checkDoubleAutoWin(i, j, tempCount)){
+//                                //auto lose
+//                                return MIN_VALUE;
+//                            }
+//                        }
+//                        tempCount++;
                     }
                     if(oppInARow[winNumber-1] >= 1){
                         //We Lose!
@@ -179,10 +185,7 @@ public class MGDMStateTree extends StateTree
         }
         else if (tempCount==2){
             if((i+winNumber-1 < rows) && this.getBoardMatrix()[i+winNumber-1][j] == 0){
-                if((i>0 && this.getBoardMatrix()[i-1][j+winNumber-1] != 0)){
-                    //auto win
-                    return true;
-                }
+                return true;
             }
         }
         else if (tempCount==3){
@@ -235,14 +238,6 @@ public class MGDMStateTree extends StateTree
                 }
             }
         }
-        else if (tempCount==2){
-            if((i+winNumber-1 < rows) && this.getBoardMatrix()[i+winNumber-1][j] == 0){
-                if((i>0 && this.getBoardMatrix()[i-1][j+winNumber-1] != 0)){
-                    //auto win
-                    return true;
-                }
-            }
-        }
         else if (tempCount==3){
             if((j-winNumber+1 >= 0 && i+winNumber-1 < rows) && this.getBoardMatrix()[i+winNumber-1][j-winNumber+1] == 0){
                 if((this.getBoardMatrix()[i+winNumber-2][j-winNumber+1] != 0)){
@@ -270,7 +265,6 @@ public class MGDMStateTree extends StateTree
      * @return An integer array of how many in a row are from this position from each direction checked
      */
     public int[] inARow(int rowNum, int colNum){
-        //TODO check for auto win for us and them
         int currentPlayer = this.getBoardMatrix()[rowNum][colNum];
         //array of how many in a row from position to each direction checked
         int[] numInARow = new int[4];
@@ -285,7 +279,8 @@ public class MGDMStateTree extends StateTree
                 if(i == 0){
                     //right
                     if((colNum + count < this.columns) && (!hasBeenVisited(rowNum,colNum+count,i)) && (this.getBoardMatrix()[rowNum][colNum + count] == currentPlayer)){
-                        numInARow[i]++;
+                        if(numInARow[i]<winNumber)
+                            numInARow[i]++;
                         visited.add(new Coordinates(rowNum,colNum+count,i));
                         count++;
                     }
@@ -296,7 +291,8 @@ public class MGDMStateTree extends StateTree
                 else if(i == 1){
                     //right and up
                     if((colNum + count < this.columns) && (rowNum + count < this.rows) && (!hasBeenVisited(rowNum+count,colNum+count,i)) && (this.getBoardMatrix()[rowNum + count][colNum + count] == currentPlayer)){
-                        numInARow[i]++;
+                        if(numInARow[i]<winNumber)
+                            numInARow[i]++;
                         visited.add(new Coordinates(rowNum+count,colNum+count,i));
                         count++;
                     }
@@ -307,7 +303,8 @@ public class MGDMStateTree extends StateTree
                 else if(i == 2){
                     //up
                     if((rowNum + count < this.rows) && (!hasBeenVisited(rowNum+count,colNum,i)) && (this.getBoardMatrix()[rowNum + count][colNum] == currentPlayer)){
-                        numInARow[i]++;
+                        if(numInARow[i]<winNumber)
+                            numInARow[i]++;
                         visited.add(new Coordinates(rowNum+count,colNum,i));
                         count++;
                     }
@@ -318,7 +315,8 @@ public class MGDMStateTree extends StateTree
                 else{
                     //up and to left
                     if((colNum - count >= 0) && (rowNum + count < this.rows) && (!hasBeenVisited(rowNum+count,colNum-count,i)) && (this.getBoardMatrix()[rowNum + count][colNum - count] == currentPlayer)){
-                        numInARow[i]++;
+                        if(numInARow[i]<winNumber)
+                            numInARow[i]++;
                         visited.add(new Coordinates(rowNum+count,colNum-count,i));
                         count++;
                     }
