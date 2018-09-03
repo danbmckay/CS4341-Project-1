@@ -377,6 +377,47 @@ public class MGDMStateTree extends StateTree
             }
         }
     }
+    public boolean validMove(Move move)
+    {
+        if(move.column >= columns || move.column < 0)
+        {
+
+            return false;
+        }
+        if(!move.pop && boardMatrix[rows-1][move.column] != 0)
+        {
+
+            return false;
+        }
+        if(move.pop)
+        {
+            if(boardMatrix[0][move.column] != turn)
+            {
+
+                return false;
+            }
+
+            if((turn == 1 && pop1) || (turn == 2 && pop2))
+            {
+
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public void display()
+    {
+        for (int i=rows-1; i>=0; i--)
+        {
+            for (int j = 0; j < columns; j++)
+            {
+                System.out.print(boardMatrix[i][j] + " ");
+            }
+            System.out.println();
+        }
+        System.out.println();
+    }
 }
 
 /**

@@ -75,6 +75,10 @@ public class MGDMPlayer extends Player {
                 mTurn = 2;
                 tTurn = 1;
             }
+            myFinalMove = new Move(false, initState.columns/2);
+            firstTurn = false;
+            return myFinalMove;
+
         }
         //determines if pops have been used and resets the current depth of iterative deepening search
         else {
@@ -85,7 +89,8 @@ public class MGDMPlayer extends Player {
         Future<Object> future = null;
 
         //gets the initial moves and scores for each turn of play
-        gKids = getPossibleBoards(initState, true);
+        MGDMStateTree tempTree = new MGDMStateTree(initState.rows, initState.columns, initState.winNumber, mTurn, myPop, theirPop, initState, mTurn);
+        gKids = getPossibleBoards(tempTree, true);
         gScores = new ArrayList<>();
 
         //launch the thread that will timeout appropriately
@@ -112,43 +117,57 @@ public class MGDMPlayer extends Player {
     }
 
     private Move startMiniMax(){
+        List<Double> tempScores = gScores;
+        System.out.println("starting mini max");
         double alpha = NINFINITY;
         double beta = INFINITY;
         double tempScore = 0;
+
         while(true) {
             Move finalMove;
+
             for (int i = 0; i < gKids.size(); i++) {
                 MGDMStateTree tempTree = new MGDMStateTree(initState.rows, initState.columns, initState.winNumber, mTurn, myPop, theirPop, initState, mTurn);
                 tempTree.testMove(gKids.get(i));
+
                 if (currentDepth > 1) {
-                    tempScore =miniMax(tempTree,currentDepth, alpha, beta);
-                } else {
+
+                    double testScore = tempTree.evaluate();
+                    if(testScore == INFINITY || testScore == NINFINITY){
+                        tempScore = testScore;
+                    }
+                    else{
+                        tempScore =miniMax(tempTree,2, alpha, beta);
+                    }
+
+                }
+                else {
                     tempScore = tempTree.evaluate();
                 }
+
                 gScores.add(tempScore);
                 if(tempScore == INFINITY){
                     break;
                 }
-                if(tempScore > beta){
-                    break;
-                }
-                else{
-                    if(tempScore > alpha){
-                        alpha = tempScore;
-                    }
-                }
+
+                alpha = Collections.max(gScores);
 
             }
+
             finalMove = gKids.get(gScores.indexOf(Collections.max(gScores)));
-            //alpha = INFINITY;
+            alpha = NINFINITY;
             myFinalMove = finalMove;
+
+            if(currentDepth < 20) {
+                System.out.print("current depth " + currentDepth + ":" +
+                        " ");
+                System.out.println(gScores);
+            }
             if(Collections.max(gScores) == INFINITY){
                 break;
             }
 
             gScores = new ArrayList<>();
-
-
 
             currentDepth += 1;
 
@@ -163,6 +182,8 @@ public class MGDMPlayer extends Player {
         double mAlpha = NINFINITY;
         double mBeta = INFINITY;
         double tempScore = 0.0;
+        double testScore = 0.0;
+
         //is the player me
         if(depth%2 == 1) {
             kids = getPossibleBoards(currentState, true);
@@ -174,7 +195,7 @@ public class MGDMPlayer extends Player {
                     tempTree.testMove(kids.get(i));
                     tempScore = tempTree.evaluate();
                     scores.add(tempScore);
-                    if(scores.get(i) == INFINITY){
+                    if(tempScore == INFINITY){
                         return INFINITY;
                     }
                     if(tempScore > beta){
@@ -189,19 +210,20 @@ public class MGDMPlayer extends Player {
                 for(int i = 0 ; i < kids.size(); i++) {
                     MGDMStateTree tempTree = new MGDMStateTree(currentState.rows, currentState.columns, currentState.winNumber, mTurn, myPop, theirPop, currentState, mTurn);
                     tempTree.testMove(kids.get(i));
+                    testScore = tempTree.evaluate();
+                    if(testScore == INFINITY){
+                        return INFINITY;
+                    }
                     tempScore = miniMax(tempTree, depth+1, mAlpha, mBeta);
                     scores.add(tempScore);
-                    if(scores.get(i) == INFINITY){
+                    if(tempScore == INFINITY){
                         break;
                     }
                     if(tempScore > beta){
                         break;
                     }
-                    else{
-                        if(tempScore > mAlpha){
-                            mAlpha = tempScore;
-                        }
-                    }
+
+                    mAlpha = Collections.max(scores);
                 }
                 return Collections.max(scores);
             }
@@ -218,7 +240,7 @@ public class MGDMPlayer extends Player {
                     tempTree.testMove(kids.get(i));
                     tempScore = tempTree.evaluate();
                     scores.add(tempScore);
-                    if(scores.get(i) == NINFINITY){
+                    if(tempScore == NINFINITY){
                         return NINFINITY;
                     }
                     if(tempScore < alpha){
@@ -233,23 +255,19 @@ public class MGDMPlayer extends Player {
                 for(int i = 0 ; i < kids.size(); i++) {
                     MGDMStateTree tempTree = new MGDMStateTree(currentState.rows, currentState.columns, currentState.winNumber, tTurn, myPop, theirPop, currentState, mTurn);
                     tempTree.testMove(kids.get(i));
-                    double testScore = tempTree.evaluate();
+                    testScore = tempTree.evaluate();
                     if(testScore == NINFINITY){
                         return NINFINITY;
                     }
                     tempScore = miniMax(tempTree, depth+1, mAlpha, mBeta);
                     scores.add(tempScore);
-                    if(scores.get(i) == NINFINITY){
+                    if(tempScore == NINFINITY){
                         return NINFINITY;
                     }
                     if(tempScore < alpha){
                         return tempScore;
                     }
-                    else{
-                        if(tempScore < mBeta){
-                            mBeta = tempScore;
-                        }
-                    }
+                    mBeta = Collections.min(scores);
                 }
                 return Collections.min(scores);
             }
@@ -257,7 +275,7 @@ public class MGDMPlayer extends Player {
         }
     }
 
-    private List<Move> getPossibleBoards(StateTree parentState, boolean isMe){
+    private List<Move> getPossibleBoards(MGDMStateTree parentState, boolean isMe){
         List<Move> kids = new ArrayList<>(); //list that will be returned later
         //my turn
         boolean isPop = isPop(isMe);
@@ -266,12 +284,14 @@ public class MGDMPlayer extends Player {
             for (int i = 0; i < parentState.columns * 2; i++) {
                 if (i < parentState.columns) {
                     Move tempMove = new Move(false, i);
-                    if (isValidMove(parentState, tempMove)) {
+                    if (parentState.validMove(tempMove)) {
                         kids.add(tempMove);
                     }
                 } else {
                     Move tempMove = new Move(true, i - parentState.columns);
-                    if (isValidMove(parentState, tempMove)) {
+
+                    if (parentState.validMove(tempMove)) {
+                        System.out.println("the move: pop: " + tempMove.getPop() + ", column: " + tempMove.getColumn());
                         kids.add(tempMove);
                     }
                 }
@@ -280,7 +300,7 @@ public class MGDMPlayer extends Player {
         else{
             for (int i = 0; i < parentState.columns; i++) {
                 Move tempMove = new Move(false, i);
-                if (isValidMove(parentState, tempMove)) {
+                if (parentState.validMove(tempMove)) {
                     kids.add(tempMove);
                 }
             }
