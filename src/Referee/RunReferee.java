@@ -27,7 +27,7 @@ public class RunReferee {
         // End of modifications
 
 
-        Player player1 = (Player) new SimplePlayer1("SimplePlayer1", 1, timeLimit);
+        Player player1 = (Player) new MGDMPlayer("SimplePlayer1", 1, timeLimit);
         Player player2 = (Player) new MGDMPlayer("OurPlayer", 2, timeLimit);
 
         Referee referee = new Referee();
