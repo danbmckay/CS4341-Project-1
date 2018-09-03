@@ -28,8 +28,10 @@ public class MGDMPlayer extends Player {
     private Move myFinalMove; //what is the move we have waiting to do
     private int mTurn = 0; //value for our turn
     private int tTurn = 0; //value for their turn
-    final int INFINITY = 10000;
-    final int NINFINITY = -10000;
+    private static double INFINITY = 10000.0;
+    private static double NINFINITY = -10000.0;
+
+
 
     Callable<Object> getNextDepth;
 
@@ -52,6 +54,7 @@ public class MGDMPlayer extends Player {
 
     //starts the iterative deepening search
     private Move IDFS(StateTree localInitState){
+
         //make the initial state global
         initState = localInitState;
         //dummy as a place holder move
@@ -66,6 +69,7 @@ public class MGDMPlayer extends Player {
             if(getTurn(localInitState)){
                 mTurn = 1;
                 tTurn = 2;
+
             }
             else{
                 mTurn = 2;
@@ -88,6 +92,7 @@ public class MGDMPlayer extends Player {
         try {
             future = myService.submit(getNextDepth);
             finalMove = (Move) future.get(myTimeLimit, TimeUnit.SECONDS);
+            return finalMove;
         } catch (TimeoutException e) {
             future.cancel(true);
             maxDepth = 1;
@@ -103,6 +108,7 @@ public class MGDMPlayer extends Player {
         }
 
         return myFinalMove;
+
     }
 
     private Move startMiniMax(){
@@ -117,7 +123,7 @@ public class MGDMPlayer extends Player {
                 if (currentDepth > 1) {
                     tempScore =miniMax(tempTree,currentDepth, alpha, beta);
                 } else {
-                    tempScore =tempTree.evaluate();
+                    tempScore = tempTree.evaluate();
                 }
                 gScores.add(tempScore);
                 if(tempScore == INFINITY){
@@ -134,18 +140,29 @@ public class MGDMPlayer extends Player {
 
             }
             finalMove = gKids.get(gScores.indexOf(Collections.max(gScores)));
-            gScores = new ArrayList<>();
+            //alpha = INFINITY;
             myFinalMove = finalMove;
+            if(Collections.max(gScores) == INFINITY){
+                break;
+            }
+
+            gScores = new ArrayList<>();
+
+
+
             currentDepth += 1;
+
         }
+        return myFinalMove;
+
     }
 
 
-    private Double miniMax(StateTree currentState, int depth, double alpha, double beta){
+    private Double miniMax(MGDMStateTree currentState, int depth, double alpha, double beta){
         List<Move> kids;
         double mAlpha = NINFINITY;
         double mBeta = INFINITY;
-        double tempScore = 0;
+        double tempScore = 0.0;
         //is the player me
         if(depth%2 == 1) {
             kids = getPossibleBoards(currentState, true);
@@ -158,10 +175,10 @@ public class MGDMPlayer extends Player {
                     tempScore = tempTree.evaluate();
                     scores.add(tempScore);
                     if(scores.get(i) == INFINITY){
-                        break;
+                        return INFINITY;
                     }
                     if(tempScore > beta){
-                        break;
+                        return tempScore;
                     }
                 }
                 return Collections.max(scores);
@@ -197,15 +214,15 @@ public class MGDMPlayer extends Player {
             if(depth==currentDepth){
                 List<Double> scores = new ArrayList<>();
                 for(int i = 0 ; i < kids.size(); i++) {
-                    MGDMStateTree tempTree = new MGDMStateTree(currentState.rows, currentState.columns, currentState.winNumber, tTurn, myPop, theirPop, currentState, tTurn);
+                    MGDMStateTree tempTree = new MGDMStateTree(currentState.rows, currentState.columns, currentState.winNumber, tTurn, myPop, theirPop, currentState, mTurn);
                     tempTree.testMove(kids.get(i));
                     tempScore = tempTree.evaluate();
                     scores.add(tempScore);
                     if(scores.get(i) == NINFINITY){
-                        break;
+                        return NINFINITY;
                     }
                     if(tempScore < alpha){
-                        break;
+                        return tempScore;
                     }
                 }
                 return Collections.min(scores);
@@ -214,15 +231,19 @@ public class MGDMPlayer extends Player {
             else{
                 List<Double> scores = new ArrayList<>();
                 for(int i = 0 ; i < kids.size(); i++) {
-                    MGDMStateTree tempTree = new MGDMStateTree(currentState.rows, currentState.columns, currentState.winNumber, tTurn, myPop, theirPop, currentState, tTurn);
+                    MGDMStateTree tempTree = new MGDMStateTree(currentState.rows, currentState.columns, currentState.winNumber, tTurn, myPop, theirPop, currentState, mTurn);
                     tempTree.testMove(kids.get(i));
+                    double testScore = tempTree.evaluate();
+                    if(testScore == NINFINITY){
+                        return NINFINITY;
+                    }
                     tempScore = miniMax(tempTree, depth+1, mAlpha, mBeta);
                     scores.add(tempScore);
                     if(scores.get(i) == NINFINITY){
-                        break;
+                        return NINFINITY;
                     }
                     if(tempScore < alpha){
-                        break;
+                        return tempScore;
                     }
                     else{
                         if(tempScore < mBeta){
@@ -238,68 +259,51 @@ public class MGDMPlayer extends Player {
 
     private List<Move> getPossibleBoards(StateTree parentState, boolean isMe){
         List<Move> kids = new ArrayList<>(); //list that will be returned later
-        //whos turn is it?
-        if(isMe) {
-            //do i still have my pop
-            if (!myPop) {
-                //make all possible states including possible pops
-                for (int i = 0; i < parentState.columns*2; i++) {
-                    if(i < parentState.columns) {
-                        Move tempMove = new Move(false, i);
-                        if(isValidMove(parentState, tempMove)) {
-                            kids.add(tempMove);
-                        }
-                    }
-                    else{
-                        Move tempMove = new Move(true,i-7);
-                        if(isValidMove(parentState, tempMove)) {
-                            kids.add(tempMove);
-                        }
-                    }
-                }
-            }
-            //make all possible moves when we no longer have a pop
-            else{
-                for (int i = 0; i < parentState.columns; i++) {
+        //my turn
+        boolean isPop = isPop(isMe);
+        if(isPop){
+            //make all possible states including possible pops
+            for (int i = 0; i < parentState.columns * 2; i++) {
+                if (i < parentState.columns) {
                     Move tempMove = new Move(false, i);
-                    if(isValidMove(parentState, tempMove)) {
+                    if (isValidMove(parentState, tempMove)) {
+                        kids.add(tempMove);
+                    }
+                } else {
+                    Move tempMove = new Move(true, i - parentState.columns);
+                    if (isValidMove(parentState, tempMove)) {
                         kids.add(tempMove);
                     }
                 }
             }
         }
-        // its their turn
         else{
-            // do they have their pop
-            if(!theirPop) {
-                //make all possible states if they have their pop
-                for (int i = 0; i < parentState.columns*2; i++) {
-                    if(i < parentState.columns) {
-                        Move tempMove = new Move(false, i);
-                        if(isValidMove(parentState, tempMove)) {
-                            kids.add(tempMove);
-                        }
-                    }
-                    else{
-                        Move tempMove = new Move(true,i-7);
-                        if(isValidMove(parentState, tempMove)) {
-                            kids.add(tempMove);
-                        }
-                    }
-                }
-            }
-            //make all possible moves with no pops
-            else{
-                for (int i = 0; i < parentState.columns; i++) {
-                    Move tempMove = new Move(false, i);
-                    if(isValidMove(parentState, tempMove)) {
-                        kids.add(tempMove);
-                    }
+            for (int i = 0; i < parentState.columns; i++) {
+                Move tempMove = new Move(false, i);
+                if (isValidMove(parentState, tempMove)) {
+                    kids.add(tempMove);
                 }
             }
         }
 
+
         return kids;
+    }
+
+    private boolean isPop(boolean isMe){
+        //my turn
+        if(isMe){
+            //i'm player one
+            if(myPop){
+                return true;
+            }
+        }
+        else{
+            if(theirPop){
+                return true;
+            }
+        }
+        return false;
     }
 
 
