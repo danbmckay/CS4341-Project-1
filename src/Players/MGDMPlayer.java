@@ -32,6 +32,7 @@ public class MGDMPlayer extends Player {
     private static double NINFINITY = -10000.0;
 
 
+
     Callable<Object> getNextDepth;
 
 
@@ -89,16 +90,17 @@ public class MGDMPlayer extends Player {
         Future<Object> future = null;
 
         //gets the initial moves and scores for each turn of play
-        MGDMStateTree tempState = new MGDMStateTree(initState.rows, initState.columns, initState.winNumber, mTurn, myPop, theirPop, initState, mTurn);
-        gKids = getPossibleBoards(tempState, true);
-        System.out.println(gKids);
+        gKids = getPossibleBoards(initState, true);
         gScores = new ArrayList<>();
 
         //launch the thread that will timeout appropriately
         try {
+            System.out.println(future);
             future = myService.submit(getNextDepth);
-            System.out.println("called the thread");
+
+            System.out.println(future);
             finalMove = (Move) future.get(myTimeLimit, TimeUnit.SECONDS);
+            return finalMove;
         } catch (TimeoutException e) {
             future.cancel(true);
             maxDepth = 1;
@@ -261,10 +263,10 @@ public class MGDMPlayer extends Player {
         }
     }
 
-    private List<Move> getPossibleBoards(MGDMStateTree parentState, boolean isMe){
+    private List<Move> getPossibleBoards(StateTree parentState, boolean isMe){
         List<Move> kids = new ArrayList<>(); //list that will be returned later
         //my turn
-        boolean isPop = isPop(parentState, isMe);
+        boolean isPop = isPop(isMe);
         if(isPop){
             //make all possible states including possible pops
             for (int i = 0; i < parentState.columns * 2; i++) {
@@ -294,7 +296,7 @@ public class MGDMPlayer extends Player {
         return kids;
     }
 
-    private boolean isPop(MGDMStateTree aState, boolean isMe){
+    private boolean isPop(boolean isMe){
         //my turn
         if(isMe){
             //i'm player one
@@ -303,7 +305,7 @@ public class MGDMPlayer extends Player {
             }
         }
         else{
-            if(theirPop ){
+            if(theirPop){
                 return true;
             }
         }
@@ -341,7 +343,7 @@ public class MGDMPlayer extends Player {
         return true;
     }
 
-    public boolean isValidMove(MGDMStateTree aState, Move cMove){
+    public boolean isValidMove(StateTree aState, Move cMove){
         //piece out of place
         if(cMove.getColumn() >= aState.columns || cMove.getColumn() < 0){
             return false;
