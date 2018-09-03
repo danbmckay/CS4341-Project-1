@@ -21,6 +21,9 @@ public class MGDMStateTree extends StateTree
     private PrintStream out = null;
     ArrayList<Coordinates> visited;
 
+    public static final double MAX_VALUE = 10000.0;
+    public static final double MIN_VALUE = -10000.0;
+
 
     public MGDMStateTree(int r, int c, int w, int t, boolean p1, boolean p2, StateTree p, int playerNum)
     {
@@ -53,8 +56,6 @@ public class MGDMStateTree extends StateTree
      * @return heuristic evaluation of the current state
      */
     public double evaluate(){
-        //TODO check for auto win for us and them
-        //TODO check for win from pop
         //keeps track of total number of 1 in a rows, 2 in a rows, etc. for both players
         //array[0] = 1 in a row, array[1] = 2 in a row..... array[N-1] = N in a row
         int[] playerInARow = new int[winNumber];
@@ -67,61 +68,76 @@ public class MGDMStateTree extends StateTree
 
         for(int i = 0; i < rows; i++){
             for(int j = 0; j < columns; j++){
+                //TODO check for pop win here
                 tempInARow = inARow(i, j);
                 tempCount = 0;
                 if(this.getBoardMatrix()[i][j] == playerNum){
                     //Our player
                     for(int temp:tempInARow){
                         playerInARow[temp-1]++;
-                        if(temp == winNumber-1 && super.turn == playerNum){
+                        if(temp == winNumber-1 && turn == playerNum){
                             //1 away from N in a row, use tempCount to know which direction it is
                             //0 = right, 1= right up, 2= up, 3= up left
                             //checking for automatic win because it is our turn
                             if(checkEasyAutoWin(i, j, tempCount)){
                                 //auto win
-                                return 1.0;
+                                return MAX_VALUE;
                             }
                         }
-                        //TODO check same stuff as above but if its not our turn. check for auto win that way, aka 0 1 1 1 0
+                        else if(temp == winNumber-1 && turn!=playerNum){
+                            if(checkDoubleAutoWin(i, j, tempCount)){
+                                //auto win
+                                return MAX_VALUE;
+                            }
+                        }
                         tempCount++;
                     }
                     if(playerInARow[winNumber-1] >= 1){
                         //We Win!
-                        return 1.0;
+                        return MAX_VALUE;
                     }
                 }
                 else if(this.getBoardMatrix()[i][j] != playerNum && this.getBoardMatrix()[i][j] != 0){
                     //Opposing player
                     for(int temp:tempInARow){
                         oppInARow[temp-1]++;
-                        if(temp == winNumber-1 && super.turn != playerNum){
+                        if(temp == winNumber-1 && turn != playerNum){
                             //1 away from N in a row, use tempCount to know which direction it is
                             //0 = right, 1= right up, 2= up, 3= up left
                             //checking for automatic lose because it is their turn
                             if(checkEasyAutoWin(i, j, tempCount)){
                                 //auto lose
-                                return -1.0;
+                                return MIN_VALUE;
                             }
                         }
+                        else if(temp == winNumber-1 && turn == playerNum){
+                            if(checkDoubleAutoWin(i, j, tempCount)){
+                                //auto lose
+                                return MIN_VALUE;
+                            }
+                        }
+                        tempCount++;
                     }
                     if(oppInARow[winNumber-1] >= 1){
                         //We Lose!
-                        return -1.0;
+                        return MIN_VALUE;
                     }
                 }
             }
         }
         //heuristic value for player board state
-        double playerSigmoid = 0;
+        double playerValue = 0;
         //heuristic value for opponent board state
-        double oppSigmoid = 0;
+        double oppValue = 0;
         //ignore 1 in a row for heuristic check
         for(int i = 1; i < winNumber; i++){
-            playerSigmoid += Math.pow((double)playerInARow[i], (double)i);
-            oppSigmoid += Math.pow((double)oppInARow[i], (double)i);
+            playerValue += Math.pow((double)i+1, 2.0) * playerInARow[i];
+            oppValue += Math.pow((double)i+1, 2.0) * oppInARow[i];
         }
-        double heuristic = playerSigmoid - oppSigmoid;
-        return sigmoid(heuristic);
+//        if(playerValue-oppValue>0) {
+//            System.out.println(playerValue - oppValue);
+//        }
+        return playerValue - oppValue;
     }
 
     /**
@@ -187,13 +203,63 @@ public class MGDMStateTree extends StateTree
     }
 
     /**
-     * Takes in a value and normalizes it between -1 and 1
-     * @param x Difference between our heuristic value and opponent's heuristic value
-     * @return Normalized value between -1 and 1
+     * Checks at location i, j if there are 2 spaces open for an automatic win, e.g. 0 1 1 1 0
+     * This assumes that starting from space [i,j], there is N-1 in a row
+     * @param i row of starting piece
+     * @param j column of starting piece
+     * @param tempCount direction to check in
+     * @return whether or not there is an automatic win
      */
-    public double sigmoid(double x){
-        //(1-e^2x)/(1+e^2x)
-        return (1.0 - Math.pow(Math.E, (-2.0 * x))) / (1.0 + Math.pow(Math.E, (-2.0 * x)));
+    public boolean checkDoubleAutoWin(int i, int j, int tempCount){
+        if(tempCount==0){
+            if((j+winNumber-1 < columns) && this.getBoardMatrix()[i][j+winNumber-1] == 0){
+                if((i>0 && this.getBoardMatrix()[i-1][j+winNumber-1] != 0) || (i == 0)){
+                    if((j-1 >= 0) && this.getBoardMatrix()[i][j-1] == 0){
+                        if((i>0 && this.getBoardMatrix()[i-1][j-1] != 0) || (i == 0)){
+                            //auto win
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        else if (tempCount==1){
+            if((j+winNumber-1 < columns && i+winNumber-1 < rows) && this.getBoardMatrix()[i+winNumber-1][j+winNumber-1] == 0){
+                if((this.getBoardMatrix()[i+winNumber-2][j+winNumber-1] != 0)){
+                    if((j-1 >= 0 && i-1 >= 0) && this.getBoardMatrix()[i-1][j-1] == 0){
+                        if((i-2 >=0 && this.getBoardMatrix()[i-2][j-1] != 0) || (i-1 == 0)){
+                            //auto win
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        else if (tempCount==2){
+            if((i+winNumber-1 < rows) && this.getBoardMatrix()[i+winNumber-1][j] == 0){
+                if((i>0 && this.getBoardMatrix()[i-1][j+winNumber-1] != 0)){
+                    //auto win
+                    return true;
+                }
+            }
+        }
+        else if (tempCount==3){
+            if((j-winNumber+1 >= 0 && i+winNumber-1 < rows) && this.getBoardMatrix()[i+winNumber-1][j-winNumber+1] == 0){
+                if((this.getBoardMatrix()[i+winNumber-2][j-winNumber+1] != 0)){
+                    if((j+1 < columns && i-1 >= 0) && this.getBoardMatrix()[i-1][j+1] == 0){
+                        if((i-2 >= 0 && this.getBoardMatrix()[i-2][j+1] != 0) || (i==0)){
+                            //auto win
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    public int[][]  getBoardMatrix() {
+        return boardMatrix;
     }
 
     /**
@@ -288,9 +354,9 @@ public class MGDMStateTree extends StateTree
     {
         if(move.pop)
         {
-            if(super.turn == 1)
+            if(turn == 1)
                 pop1 = true;
-            if(super.turn == 2)
+            if(turn == 2)
                 pop2 = true;
             for(int i=0; i<rows-1; i++)
             {

@@ -36,23 +36,17 @@ public class StateTreeTest {
         m6 = new Move(false,6);
     }
 
-
-    @Test
-    public void testSigmoid(){
-        assertEquals(tree1.sigmoid(0),0.0, 0);
-    }
-
     @Test
     public void test4Win(){
         Move move1 = new Move(false,0);
         Move move2 = new Move(false, 1);
         for(int i = 0; i<3; i++) {
-            tree1.makeMove(move1);
-            tree1.makeMove(move2);
+            tree1.testMove(move1);
+            tree1.testMove(move2);
         }
-//        tree1.makeMove(move1);
+//        tree1.testMove(move1);
 
-        assertEquals(tree1.evaluate(),1.0,0);
+        assertEquals(tree1.evaluate(),tree1.MAX_VALUE,0);
     }
 
     @Test
@@ -60,13 +54,13 @@ public class StateTreeTest {
         Move move1 = new Move(false,0);
         Move move2 = new Move(false, 1);
         for(int i = 0; i<3; i++) {
-            tree1.makeMove(move1);
-            tree1.makeMove(move2);
+            tree1.testMove(move1);
+            tree1.testMove(move2);
         }
-        tree1.makeMove(new Move(false, 3));
-        tree1.makeMove(move2);
+        tree1.testMove(new Move(false, 3));
+        tree1.testMove(move2);
 
-        assertEquals(tree1.evaluate(),-1.0,0);
+        assertEquals(tree1.evaluate(),tree1.MIN_VALUE,0);
     }
 
     @Test
@@ -74,25 +68,34 @@ public class StateTreeTest {
         Random rand = new Random();
         for(int i = 0;i<5;i++){
             int r = rand.nextInt(6);
-            tree1.makeMove(new Move(false, r));
+            tree1.testMove(new Move(false, r));
         }
         System.out.println(tree1.evaluate());
     }
 
     @Test
     public void testAutoWin(){
-        tree1.makeMove(m0);
-        tree1.makeMove(m0);
-        tree1.makeMove(m1);
-        tree1.makeMove(m1);
-        tree1.makeMove(m2);
-        tree1.makeMove(m2);
-        tree1.makeMove(m4);
-        tree1.makeMove(m3);
-        tree1.makeMove(m4);
+        tree1.testMove(m0);
+        tree1.testMove(m0);
+        tree1.testMove(m1);
+        tree1.testMove(m1);
+        tree1.testMove(m2);
+        tree1.testMove(m2);
+        tree1.testMove(m4);
+        tree1.testMove(m3);
+        tree1.testMove(m4);
+        assertEquals(tree1.evaluate(),tree1.MIN_VALUE,0.0);
+    }
 
-
-        assertEquals(tree1.evaluate(),-1.0,0.0);
-
+    @Test
+    public void testAutoLose(){
+        tree1.testMove(m0);
+        tree1.testMove(m0);
+        tree1.testMove(m0);
+        tree1.testMove(m1);
+        tree1.testMove(m0);
+        tree1.testMove(m1);
+        tree1.testMove(m0);
+        tree1.testMove(m1);
     }
 }
