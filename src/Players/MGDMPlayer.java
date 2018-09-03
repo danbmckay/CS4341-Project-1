@@ -28,6 +28,8 @@ public class MGDMPlayer extends Player {
     private Move myFinalMove; //what is the move we have waiting to do
     private int mTurn = 0; //value for our turn
     private int tTurn = 0; //value for their turn
+    final int INFINITY = 10000;
+    final int NINFINITY = -10000;
 
     Callable<Object> getNextDepth;
 
@@ -104,26 +106,46 @@ public class MGDMPlayer extends Player {
     }
 
     private Move startMiniMax(){
+        double alpha = NINFINITY;
+        double beta = INFINITY;
+        double tempScore = 0;
         while(true) {
             Move finalMove;
             for (int i = 0; i < gKids.size(); i++) {
                 MGDMStateTree tempTree = new MGDMStateTree(initState.rows, initState.columns, initState.winNumber, mTurn, myPop, theirPop, initState, mTurn);
                 tempTree.testMove(gKids.get(i));
                 if (currentDepth > 1) {
-                    gScores.add(miniMax(tempTree,currentDepth));
+                    tempScore =miniMax(tempTree,currentDepth, alpha, beta);
                 } else {
-                    gScores.add(tempTree.evaluate());
+                    tempScore =tempTree.evaluate();
                 }
+                gScores.add(tempScore);
+                if(tempScore == INFINITY){
+                    break;
+                }
+                if(tempScore > beta){
+                    break;
+                }
+                else{
+                    if(tempScore > alpha){
+                        alpha = tempScore;
+                    }
+                }
+
             }
-            finalMove = gKids.get(gScores.indexOf(Collections.min(gScores)));
+            finalMove = gKids.get(gScores.indexOf(Collections.max(gScores)));
+            gScores = new ArrayList<>();
             myFinalMove = finalMove;
             currentDepth += 1;
         }
     }
 
 
-    private Double miniMax(StateTree currentState, int depth){
+    private Double miniMax(StateTree currentState, int depth, double alpha, double beta){
         List<Move> kids;
+        double mAlpha = NINFINITY;
+        double mBeta = INFINITY;
+        double tempScore = 0;
         //is the player me
         if(depth%2 == 1) {
             kids = getPossibleBoards(currentState, true);
@@ -133,7 +155,14 @@ public class MGDMPlayer extends Player {
                 for(int i = 0 ; i < kids.size(); i++) {
                     MGDMStateTree tempTree = new MGDMStateTree(currentState.rows, currentState.columns, currentState.winNumber, mTurn, myPop, theirPop, currentState, mTurn);
                     tempTree.testMove(kids.get(i));
-                    scores.add(tempTree.evaluate());
+                    tempScore = tempTree.evaluate();
+                    scores.add(tempScore);
+                    if(scores.get(i) == INFINITY){
+                        break;
+                    }
+                    if(tempScore > beta){
+                        break;
+                    }
                 }
                 return Collections.max(scores);
             }
@@ -143,7 +172,19 @@ public class MGDMPlayer extends Player {
                 for(int i = 0 ; i < kids.size(); i++) {
                     MGDMStateTree tempTree = new MGDMStateTree(currentState.rows, currentState.columns, currentState.winNumber, mTurn, myPop, theirPop, currentState, mTurn);
                     tempTree.testMove(kids.get(i));
-                    scores.add(miniMax(tempTree, depth+1));
+                    tempScore = miniMax(tempTree, depth+1, mAlpha, mBeta);
+                    scores.add(tempScore);
+                    if(scores.get(i) == INFINITY){
+                        break;
+                    }
+                    if(tempScore > beta){
+                        break;
+                    }
+                    else{
+                        if(tempScore > mAlpha){
+                            mAlpha = tempScore;
+                        }
+                    }
                 }
                 return Collections.max(scores);
             }
@@ -158,7 +199,14 @@ public class MGDMPlayer extends Player {
                 for(int i = 0 ; i < kids.size(); i++) {
                     MGDMStateTree tempTree = new MGDMStateTree(currentState.rows, currentState.columns, currentState.winNumber, tTurn, myPop, theirPop, currentState, tTurn);
                     tempTree.testMove(kids.get(i));
-                    scores.add(tempTree.evaluate());
+                    tempScore = tempTree.evaluate();
+                    scores.add(tempScore);
+                    if(scores.get(i) == NINFINITY){
+                        break;
+                    }
+                    if(tempScore < alpha){
+                        break;
+                    }
                 }
                 return Collections.min(scores);
             }
@@ -168,7 +216,19 @@ public class MGDMPlayer extends Player {
                 for(int i = 0 ; i < kids.size(); i++) {
                     MGDMStateTree tempTree = new MGDMStateTree(currentState.rows, currentState.columns, currentState.winNumber, tTurn, myPop, theirPop, currentState, tTurn);
                     tempTree.testMove(kids.get(i));
-                    scores.add(miniMax(tempTree,depth+1));
+                    tempScore = miniMax(tempTree, depth+1, mAlpha, mBeta);
+                    scores.add(tempScore);
+                    if(scores.get(i) == NINFINITY){
+                        break;
+                    }
+                    if(tempScore < alpha){
+                        break;
+                    }
+                    else{
+                        if(tempScore < mBeta){
+                            mBeta = tempScore;
+                        }
+                    }
                 }
                 return Collections.min(scores);
             }
