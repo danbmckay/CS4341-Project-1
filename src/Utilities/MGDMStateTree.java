@@ -68,7 +68,6 @@ public class MGDMStateTree extends StateTree
 
         for(int i = 0; i < rows; i++){
             for(int j = 0; j < columns; j++){
-                //TODO check for pop win here
                 tempInARow = inARow(i, j);
                 tempCount = 0;
                 if(this.getBoardMatrix()[i][j] == playerNum){
@@ -258,6 +257,62 @@ public class MGDMStateTree extends StateTree
     }
 
     /**
+     * Takes a position on the board, the direction to check, and the number in a row that was recorded
+     * for that position, and checks if it is blocked. For example, 2 2 0 is not blocked, but 2 2 2 1
+     * is blocked, and is therefore not useful. Returns true if the pieces are not blocked in the given
+     * direction, and false if they are blocked and therefore should not be counted.
+     * @param i row of piece
+     * @param j column of piece
+     * @param tempCount direction to check in (0 = right, 1= right up, 2= up, 3= up left)
+     * @param numInARow Number of pieces in a row for given piece
+     * @return Whether or not it is blocked
+     */
+    public boolean checkNotBlocked(int i, int j, int tempCount, int numInARow){
+        if(tempCount==0){
+            if((j+numInARow-1 < columns) && this.getBoardMatrix()[i][j+numInARow-1] == 0){
+                if((i>0 && this.getBoardMatrix()[i-1][j+numInARow-1] != 0) || (i == 0)){
+                    if((j-1 >= 0) && this.getBoardMatrix()[i][j-1] == 0){
+                        if((i>0 && this.getBoardMatrix()[i-1][j-1] != 0) || (i == 0)){
+                            //auto win
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        else if (tempCount==1){
+            if((j+numInARow-1 < columns && i+numInARow-1 < rows) && this.getBoardMatrix()[i+numInARow-1][j+numInARow-1] == 0){
+                if((this.getBoardMatrix()[i+numInARow-2][j+numInARow-1] != 0)){
+                    if((j-1 >= 0 && i-1 >= 0) && this.getBoardMatrix()[i-1][j-1] == 0){
+                        if((i-2 >=0 && this.getBoardMatrix()[i-2][j-1] != 0) || (i-1 == 0)){
+                            //auto win
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        else if (tempCount==2){
+            if((i+numInARow-1 < rows) && this.getBoardMatrix()[i+numInARow-1][j] == 0){
+                return true;
+            }
+        }
+        else if (tempCount==3){
+            if((j-numInARow+1 >= 0 && i+numInARow-1 < rows) && this.getBoardMatrix()[i+numInARow-1][j-numInARow+1] == 0){
+                if((this.getBoardMatrix()[i+numInARow-2][j-numInARow+1] != 0)){
+                    if((j+1 < columns && i-1 >= 0) && this.getBoardMatrix()[i-1][j+1] == 0){
+                        if((i-2 >= 0 && this.getBoardMatrix()[i-2][j+1] != 0) || (i==0)){
+                            //auto win
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
      * counts how many pieces in a row there are at the current space. It starts at the space given, and
      * will check how many are in a row to the right, diagonal up and right, up, and diagonal up and left.
       * @param rowNum row number to start check at
@@ -285,6 +340,10 @@ public class MGDMStateTree extends StateTree
                         count++;
                     }
                     else{
+                        //make sure that it isn't blocked ex.) 1 2 2 2 1 <= this is useless
+                        if(numInARow[i]!=1 && !checkNotBlocked(rowNum,colNum,i,numInARow[i])){
+                            numInARow[i] = 1;
+                        }
                         keepSearching = false;
                     }
                 }
@@ -297,6 +356,9 @@ public class MGDMStateTree extends StateTree
                         count++;
                     }
                     else{
+                        if(numInARow[i]!=1 && !checkNotBlocked(rowNum,colNum,i,numInARow[i])){
+                            numInARow[i] = 1;
+                        }
                         keepSearching = false;
                     }
                 }
@@ -309,6 +371,9 @@ public class MGDMStateTree extends StateTree
                         count++;
                     }
                     else{
+                        if(numInARow[i]!=1 && !checkNotBlocked(rowNum,colNum,i,numInARow[i])){
+                            numInARow[i] = 1;
+                        }
                         keepSearching = false;
                     }
                 }
@@ -321,6 +386,9 @@ public class MGDMStateTree extends StateTree
                         count++;
                     }
                     else{
+                        if(numInARow[i]!=1 && !checkNotBlocked(rowNum,colNum,i,numInARow[i])){
+                            numInARow[i] = 1;
+                        }
                         keepSearching = false;
                     }
                 }
